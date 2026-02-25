@@ -1,0 +1,98 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fte-api
+  namespace: customer-success-fte
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: fte-api
+  template:
+    metadata:
+      labels:
+        app: fte-api
+    spec:
+      containers:
+      - name: fte-api
+        image: novasaas/fte-backend:latest
+        ports:
+        - containerPort: 8000
+        envFrom:
+        - configMapRef:
+            name: fte-config
+        env:
+        - name: DATABASE_URL
+          value: "postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(POSTGRES_HOST):5432/$(POSTGRES_DB)"
+        - name: GEMINI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: fte-secrets
+              key: GEMINI_API_KEY
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: fte-secrets
+              key: POSTGRES_PASSWORD
+        resources:
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+          requests:
+            cpu: "250m"
+            memory: "256Mi"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fte-worker
+  namespace: customer-success-fte
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: fte-worker
+  template:
+    metadata:
+      labels:
+        app: fte-worker
+    spec:
+      containers:
+      - name: fte-worker
+        image: novasaas/fte-backend:latest
+        command: ["python", "workers/message_processor.py"]
+        envFrom:
+        - configMapRef:
+            name: fte-config
+        env:
+        - name: DATABASE_URL
+          value: "postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(POSTGRES_HOST):5432/$(POSTGRES_DB)"
+        - name: GEMINI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: fte-secrets
+              key: GEMINI_API_KEY
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: fte-secrets
+              key: POSTGRES_PASSWORD
+        resources:
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+          requests:
+            cpu: "250m"
+            memory: "256Mi"

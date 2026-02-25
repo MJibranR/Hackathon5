@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: customer-success-fte
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fte-config
+  namespace: customer-success-fte
+data:
+  KAFKA_BOOTSTRAP_SERVERS: "kafka-svc.customer-success-fte.svc.cluster.local:9092"
+  POSTGRES_HOST: "postgres-svc.customer-success-fte.svc.cluster.local"
+  POSTGRES_DB: "novasaas"
+  POSTGRES_USER: "postgres"
+  WHATSAPP_RESPONSE_LIMIT: "300"
+  ENABLE_GMAIL: "true"
+  ENABLE_WHATSAPP: "true"
+  ENABLE_WEBFORM: "true"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: fte-secrets
+  namespace: customer-success-fte
+type: Opaque
+stringData:
+  GEMINI_API_KEY: "PLACEHOLDER"
+  POSTGRES_PASSWORD: "PLACEHOLDER"
+  GMAIL_CREDENTIALS: "PLACEHOLDER"
+  TWILIO_ACCOUNT_SID: "PLACEHOLDER"
+  TWILIO_AUTH_TOKEN: "PLACEHOLDER"
+  TWILIO_WHATSAPP_NUMBER: "PLACEHOLDER"
