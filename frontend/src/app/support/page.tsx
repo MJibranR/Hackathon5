@@ -27,11 +27,11 @@ export default function SupportForm() {
     message: ''
   });
   
-  const [status, setStatus] = useState('idle'); // 'idle', 'submitting', 'success', 'error'
-  const [ticketId, setTicketId] = useState(null);
-  const [error, setError] = useState(null);
+  const [status, setStatus] = useState<string>('idle'); // 'idle', 'submitting', 'success', 'error'
+  const [ticketId, setTicketId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
@@ -56,7 +56,7 @@ export default function SupportForm() {
     return true;
   };
   
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
     
@@ -80,7 +80,11 @@ export default function SupportForm() {
       setTicketId(data.ticket_id);
       setStatus('success');
     } catch (err) {
-      setError(err.message);
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('An unknown error occurred');
+      }
       setStatus('error');
     }
   };

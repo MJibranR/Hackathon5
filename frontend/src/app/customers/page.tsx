@@ -73,7 +73,7 @@ export default function CustomersPage() {
             placeholder="Search by name or email..." 
             className="bg-transparent border-none outline-none text-sm w-full"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
           />
         </div>
       </div>

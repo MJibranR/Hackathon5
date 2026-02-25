@@ -118,7 +118,7 @@ export default function SettingsPage() {
                     <input 
                       type="number" 
                       value={retentionDays} 
-                      onChange={(e) => setRetentionDays(parseInt(e.target.value))}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setRetentionDays(parseInt(e.target.value))}
                       className="w-20 bg-slate-800 border border-slate-700 rounded px-2 py-1 text-white text-sm"
                     />
                     <span className="text-sm text-slate-500">days</span>

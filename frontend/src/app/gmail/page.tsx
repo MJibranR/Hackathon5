@@ -12,16 +12,16 @@ export default function GmailSimulationForm() {
     message: ''
   });
   
-  const [status, setStatus] = useState('idle');
-  const [ticketId, setTicketId] = useState(null);
-  const [error, setError] = useState(null);
+  const [status, setStatus] = useState<string>('idle');
+  const [ticketId, setTicketId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
   
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
     setStatus('submitting');
@@ -42,7 +42,11 @@ export default function GmailSimulationForm() {
       setTicketId(data.ticket_id);
       setStatus('success');
     } catch (err) {
-      setError(err.message);
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('An unknown error occurred');
+      }
       setStatus('error');
     }
   };

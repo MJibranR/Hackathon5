@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { Suspense, useEffect, useState } from "react"
 import Link from "next/link"
 import { 
   Search, 
@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils"
 
 import { useSearchParams } from "next/navigation"
 
-export default function TicketsPage() {
+function TicketsPageContent() {
   const [tickets, setTickets] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
@@ -59,7 +59,7 @@ export default function TicketsPage() {
               type="text" 
               placeholder="Search by ID or category..." 
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
               className="bg-slate-900 border border-slate-800 rounded-lg pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
@@ -148,5 +148,14 @@ export default function TicketsPage() {
         </table>
       </div>
     </div>
+  )
+}
+
+
+export default function TicketsPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <TicketsPageContent />
+    </Suspense>
   )
 }
