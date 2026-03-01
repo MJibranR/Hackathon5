@@ -54,15 +54,16 @@ class GmailHandler:
         ).execute()
         
         headers = {h['name']: h['value'] for h in msg['payload']['headers']}
+        subject = headers.get('Subject', '')
         
         # Extract body
         body = self._extract_body(msg['payload'])
         
         return {
-            'channel': 'email',
+            'channel': 'gmail',
             'channel_message_id': message_id,
             'customer_email': self._extract_email(headers.get('From', '')),
-            'subject': headers.get('Subject', ''),
+            'subject': subject,
             'content': body,
             'received_at': datetime.utcnow().isoformat(),
             'thread_id': msg.get('threadId'),
@@ -93,7 +94,7 @@ class GmailHandler:
         """Send email reply."""
         message = MIMEText(body)
         message['to'] = to_email
-        message['subject'] = f"Re: {subject}" if not subject.startswith('Re:') else subject
+        message['subject'] = subject # Use subject directly from parameter
         
         raw = base64.urlsafe_b64encode(message.as_bytes()).decode('utf-8')
         
@@ -101,12 +102,21 @@ class GmailHandler:
         if thread_id:
             send_request['threadId'] = thread_id
         
-        result = self.service.users().messages().send(
-            userId='me',
-            body=send_request
-        ).execute()
-        
-        return {
-            'channel_message_id': result['id'],
-            'delivery_status': 'sent'
-        }
+        try:
+            result = self.service.users().messages().send(
+                userId='me',
+                body=send_request
+            ).execute()
+            
+            logger.info(f"Successfully sent email to {to_email} with message ID {result['id']}")
+            return {
+                'channel_message_id': result['id'],
+                'delivery_status': 'sent'
+            }
+        except Exception as e:
+            logger.error(f"Failed to send email to {to_email}: {e}")
+            return {
+                'channel_message_id': None,
+                'delivery_status': 'failed',
+                'error': str(e)
+            }

@@ -1,7 +1,7 @@
 import logging
 import os
 from uuid import UUID
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 import asyncpg
 from database import queries
 
@@ -39,12 +39,15 @@ class AgentTools:
             logger.error(f"Error searching KB: {e}")
             return "Error accessing the knowledge base."
 
-    async def create_ticket(self, customer_id: str, issue: str, channel: str, priority: str = "medium") -> Dict[str, Any]:
+    async def create_ticket(self, customer_id: str, issue: str, channel: str, priority: str = "medium", channel_message_id: Optional[str] = None) -> Dict[str, Any]:
         """ALWAYS CALL THIS FIRST. Creates a support ticket to track the customer issue."""
         try:
             c_id = UUID(customer_id)
             conv_id = await queries.get_or_create_conversation(self.pool, c_id, channel)
-            ticket_id = await queries.create_ticket(self.pool, c_id, conv_id, channel, priority)
+            ticket_id = await queries.create_ticket(
+                self.pool, c_id, conv_id, channel, priority, 
+                channel_message_id=channel_message_id
+            )
             return {"ticket_id": str(ticket_id), "status": "created", "conversation_id": str(conv_id)}
         except Exception as e:
             logger.error(f"Error creating ticket: {e}")
@@ -82,38 +85,44 @@ class AgentTools:
             from agent.formatters import format_response
             formatted_content = format_response(message, channel)
             
+            delivery_status = "sent" # Default status
+
             async with self.pool.acquire() as conn:
+                # Fetch all necessary ticket and customer info in one go
                 row = await conn.fetchrow("""
-                    SELECT t.conversation_id, c.customer_id, cust.email, cust.phone 
+                    SELECT t.conversation_id, c.customer_id, cust.email, cust.phone, t.channel_message_id
                     FROM tickets t
                     JOIN conversations c ON t.conversation_id = c.id
                     JOIN customers cust ON c.customer_id = cust.id
                     WHERE t.id = $1
                 """, t_id)
-            
-            if not row:
-                 return {"error": "No data found for this ticket."}
-
-            conv_id = row['conversation_id']
-            customer_email = row['email']
-            customer_phone = row['phone']
-
-            # --- REAL CHANNEL SENDING ---
-            delivery_status = "sent"
-            
-            if channel == "whatsapp" and customer_phone:
-                logger.info(f"Sending real WhatsApp to {customer_phone}")
-                result = await self.whatsapp.send_message(customer_phone, formatted_content)
-                delivery_status = result.get("delivery_status", "sent")
                 
-            elif channel == "gmail" and customer_email and self.gmail:
-                logger.info(f"Sending real Email to {customer_email}")
-                # We need the subject, fallback to a default or find first inbound
-                result = await self.gmail.send_reply(customer_email, "Support Ticket Update", formatted_content)
-                delivery_status = result.get("delivery_status", "sent")
+                if not row:
+                    return {"error": "No data found for this ticket."}
 
-            # Store in database
-            await queries.store_message(self.pool, conv_id, channel, "outbound", "agent", formatted_content)
+                conv_id = row['conversation_id']
+                customer_email = row['email']
+                customer_phone = row['phone']
+                ticket_channel_message_id = row['channel_message_id'] # Get the channel_message_id here
+
+                # --- REAL CHANNEL SENDING ---
+                if channel == "whatsapp" and customer_phone:
+                    logger.info(f"Sending real WhatsApp to {customer_phone}")
+                    result = await self.whatsapp.send_message(customer_phone, formatted_content)
+                    delivery_status = result.get("delivery_status", "sent")
+                    
+                elif channel == "gmail" and customer_email and self.gmail:
+                    logger.info(f"Sending real Email to {customer_email}")
+                    
+                    # Use the retrieved ticket_channel_message_id as the base subject
+                    original_subject = ticket_channel_message_id if ticket_channel_message_id else "Support Request"
+                    reply_subject = f"Re: {original_subject.replace('sim_gmail_', '')}" if original_subject.startswith('sim_gmail_') else f"Re: {original_subject}"
+                    
+                    result = await self.gmail.send_reply(customer_email, reply_subject, formatted_content)
+                    delivery_status = result.get("delivery_status", "sent")
+
+                # Store outbound message in database using the same connection
+                await queries.store_message(conn, conv_id, channel, "outbound", "agent", formatted_content)
             
             return {"formatted_message": formatted_content, "channel": channel, "status": delivery_status}
         except Exception as e:

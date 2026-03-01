@@ -24,8 +24,10 @@ export default function RootLayout({
             <main className="flex-1 overflow-y-auto bg-slate-950 p-4 md:p-8">
               {children}
             </main>
-            <footer className="border-t border-slate-800 p-4 text-center text-slate-500 text-sm">
-              made by Muhammad Jibran Rehan
+            <footer className="border-t border-slate-800 p-6 text-center">
+              <p className="text-slate-500 text-sm font-medium tracking-wide">
+                &copy; 2026 NovaSaaS • Made by <span className="text-indigo-400">Muhammad Jibran Rehan</span>
+              </p>
             </footer>
           </div>
         </div>

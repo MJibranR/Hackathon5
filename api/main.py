@@ -35,6 +35,7 @@ class Ticket(BaseModel):
     category: Optional[str]
     status: str
     created_at: datetime
+    channel_message_id: Optional[str] = None
 
 class Message(BaseModel):
     id: UUID
@@ -138,6 +139,17 @@ async def health():
         "timestamp": datetime.utcnow()
     }
 
+@app.get("/api/gmail/watch", summary="Setup Gmail API Push Notifications", response_model=Dict[str, str])
+async def setup_gmail_watch():
+    if not gmail_handler:
+        raise HTTPException(status_code=500, detail="GmailHandler not initialized. Check GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN environment variables.")
+    
+    try:
+        watch_response = await gmail_handler.setup_push_notifications(GMAIL_PUBSUB_TOPIC)
+        return {"status": "success", "message": "Gmail API watch established.", "details": watch_response}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to setup Gmail API watch: {e}")
+
 @app.post("/api/webhooks/gmail")
 async def gmail_webhook(request: Request, background_tasks: BackgroundTasks):
     """
@@ -205,7 +217,7 @@ async def list_tickets(
     limit: int = Query(20, ge=1, le=100)
 ):
     offset = (page - 1) * limit
-    query_str = "SELECT * FROM tickets WHERE 1=1"
+    query_str = "SELECT * FROM tickets WHERE 1=1" # Now selecting directly from tickets
     args = []
     
     if status:
@@ -221,7 +233,8 @@ async def list_tickets(
         args.append(customer_id)
         query_str += f" AND customer_id = ${len(args)}"
         
-    query_str += f" ORDER BY created_at DESC LIMIT {limit} OFFSET {offset}"
+    query_str += f" ORDER BY created_at DESC LIMIT ${len(args) + 1} OFFSET ${len(args) + 2}"
+    args.extend([limit, offset])
     
     rows = await db.pool.fetch(query_str, *args)
     return [dict(row) for row in rows]
@@ -282,4 +295,4 @@ async def get_metrics_overview():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=7860)

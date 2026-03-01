@@ -26,7 +26,7 @@ export default function WhatsAppSimulationForm() {
     setStatus('submitting');
     
     try {
-      const response = await fetch('http://localhost:8000/api/support/whatsapp/submit', {
+      const response = await fetch('https://muhammadjibran-hackathon5.hf.space/api/support/whatsapp/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
@@ -63,7 +63,9 @@ export default function WhatsAppSimulationForm() {
           <p className="text-xl font-mono font-bold text-emerald-400">{ticketId}</p>
         </div>
         <p className="text-sm text-slate-500">
-          The AI will process this as a WhatsApp message and reply to <strong>{formData.phone}</strong>.
+          The AI will process this as a WhatsApp message and reply to <strong>{formData.phone}</strong> <br />
+          For urgent issues, responses are prioritized automatically.
+          Please check your response in the <strong>Support Tickets</strong> section or try searching the provided Simulation ID.
         </p>
         <button
           onClick={() => setStatus('idle')}

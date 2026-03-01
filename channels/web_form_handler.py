@@ -1,8 +1,9 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, EmailStr, field_validator
 from datetime import datetime
 from typing import Optional
 import uuid
+
 from api.kafka_client import FTEKafkaProducer, TOPICS
 
 router = APIRouter(prefix="/support", tags=["support-form"])

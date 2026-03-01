@@ -50,7 +50,7 @@ class NovaAgent:
             return "To add team members, navigate to the 'Team' tab in your dashboard and click 'Invite'. I've attached our guide to this ticket."
         return "Thank you for contacting NovaSaaS. I have created a support ticket for your request, and our technical team will review it shortly."
 
-    async def process_message(self, customer_id: UUID, message: str, channel: str) -> Dict[str, Any]:
+    async def process_message(self, customer_id: UUID, message: str, channel: str, channel_message_id: Optional[str] = None) -> Dict[str, Any]:
         """Main entry point with guaranteed database execution."""
         ticket_id = None
         sentiment_score = 0.5
@@ -61,7 +61,8 @@ class NovaAgent:
             ticket_result = await self.tools_handler.create_ticket(
                 customer_id=str(customer_id),
                 issue=message[:100],
-                channel=channel
+                channel=channel,
+                channel_message_id=channel_message_id
             )
             ticket_id = ticket_result.get("ticket_id")
             

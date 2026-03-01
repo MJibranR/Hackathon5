@@ -48,6 +48,7 @@ CREATE TABLE IF NOT EXISTS messages (
     channel VARCHAR(50) NOT NULL, -- 'email', 'whatsapp', 'web_form'
     direction VARCHAR(20) NOT NULL, -- 'inbound', 'outbound'
     role VARCHAR(20) NOT NULL, -- 'customer', 'agent', 'system'
+    subject TEXT, -- For email subjects
     content TEXT NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     tokens_used INTEGER,
@@ -62,6 +63,7 @@ CREATE TABLE IF NOT EXISTS tickets (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     conversation_id UUID REFERENCES conversations(id),
     customer_id UUID REFERENCES customers(id),
+    channel_message_id VARCHAR(255), -- External ID (Gmail message ID, Twilio SID, Simulation ID)
     source_channel VARCHAR(50) NOT NULL,
     category VARCHAR(100),
     priority VARCHAR(20) DEFAULT 'medium',
@@ -116,4 +118,7 @@ CREATE INDEX IF NOT EXISTS idx_messages_conversation ON messages(conversation_id
 CREATE INDEX IF NOT EXISTS idx_messages_channel ON messages(channel);
 CREATE INDEX IF NOT EXISTS idx_tickets_status ON tickets(status);
 CREATE INDEX IF NOT EXISTS idx_tickets_channel ON tickets(source_channel);
+CREATE INDEX IF NOT EXISTS idx_tickets_channel_message_id ON tickets(channel_message_id);
 CREATE INDEX IF NOT EXISTS idx_knowledge_embedding ON knowledge_base USING ivfflat (embedding vector_cosine_ops) WITH (lists = 100);
+-- Remove the redundant subject column from messages
+ALTER TABLE messages DROP COLUMN IF EXISTS subject;

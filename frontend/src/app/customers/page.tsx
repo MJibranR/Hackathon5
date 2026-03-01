@@ -25,7 +25,7 @@ export default function CustomersPage() {
   const [search, setSearch] = useState("")
 
   useEffect(() => {
-    fetch("http://localhost:8000/api/customers")
+    fetch("https://muhammadjibran-hackathon5.hf.space/api/customers")
       .then(res => res.json())
       .then(data => {
         setCustomers(data)

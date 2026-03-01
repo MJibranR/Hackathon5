@@ -19,6 +19,6 @@ NovaSaaS is a next-generation project management platform designed for modern, d
 - Freelancers and Solopreneurs
 
 ## Support Channels
-- **Email:** support@novasaas.com
+- **Email:** opboyandguy@gmail.com
 - **WhatsApp:** +1 (555) 123-4567 (Twilio Integration)
-- **Web Form:** https://novasaas.com/support
+- **Web Form:** https://hackathon5.vercel.app/

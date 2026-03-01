@@ -45,15 +45,21 @@ class UnifiedMessageProcessor:
             
             # 3. Store Inbound Message
             await queries.store_message(
-                self.pool, conv_id, channel, "inbound", "customer", 
-                message['content'], message.get('channel_message_id')
+                pool=self.pool,
+                conversation_id=conv_id,
+                channel=channel,
+                direction="inbound",
+                role="customer",
+                content=message['content'],
+                message_id=message.get('channel_message_id')
             )
             
             # 4. Run AI Agent
             agent_result = await self.agent.process_message(
                 customer_id=customer_id,
                 message=message['content'],
-                channel=channel
+                channel=channel,
+                channel_message_id=message.get('channel_message_id')
             )
             
             # 5. Extract results

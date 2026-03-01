@@ -48,10 +48,11 @@ async def search_kb(pool: asyncpg.Pool, query: str, limit: int = 5) -> List[str]
     )
     return [r['content'] for r in rows]
 
-async def create_ticket(pool: asyncpg.Pool, customer_id: UUID, conversation_id: UUID, channel: str, priority: str, category: str = "AI Triage") -> UUID:
+async def create_ticket(pool: asyncpg.Pool, customer_id: UUID, conversation_id: UUID, channel: str, priority: str, category: str = "AI Triage", channel_message_id: Optional[str] = None) -> UUID:
     return await pool.fetchval(
-        "INSERT INTO tickets (customer_id, conversation_id, source_channel, priority, category) VALUES ($1, $2, $3, $4, $5) RETURNING id",
-        customer_id, conversation_id, channel, priority, category
+        """INSERT INTO tickets (customer_id, conversation_id, source_channel, priority, category, channel_message_id) 
+           VALUES ($1, $2, $3, $4, $5, $6) RETURNING id""",
+        customer_id, conversation_id, channel, priority, category, channel_message_id
     )
 
 async def get_history(pool: asyncpg.Pool, customer_id: UUID, limit: int = 20):
@@ -76,3 +77,16 @@ async def escalate_ticket(pool: asyncpg.Pool, ticket_id: UUID, urgency: str):
         "UPDATE conversations SET status = 'escalated', escalated_to = 'human_support' WHERE id = (SELECT conversation_id FROM tickets WHERE id = $1)",
         ticket_id
     )
+
+async def get_original_subject(pool: asyncpg.Pool, conversation_id: UUID) -> Optional[str]:
+    """Get the subject of the first inbound message in a conversation."""
+    subject = await pool.fetchval(
+        """SELECT subject FROM messages
+           WHERE conversation_id = $1 AND direction = 'inbound'
+           ORDER BY created_at ASC
+           LIMIT 1""",
+        conversation_id
+    )
+    return subject
+
+

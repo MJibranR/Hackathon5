@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { ShieldCheck, LifeBuoy, Loader2, CheckCircle2, Smartphone, Mail } from "lucide-react"
+import Link from "next/link"
 
 const CATEGORIES = [
   { value: 'general', label: 'General Question' },
@@ -65,7 +66,7 @@ export default function SupportForm() {
     setStatus('submitting');
     
     try {
-      const response = await fetch('http://localhost:8000/api/support/submit', {
+      const response = await fetch('https://muhammadjibran-hackathon5.hf.space/api/support/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
@@ -99,11 +100,14 @@ export default function SupportForm() {
         <p className="text-slate-400">Your support request has been submitted successfully.</p>
         <div className="bg-slate-800 rounded-xl p-6">
           <p className="text-xs text-slate-500 uppercase tracking-wider mb-2">Your Ticket ID</p>
+          {/* <Link href={`/tickets/${ticketId}`} className="cursor-pointer text-xl font-mono font-bold text-indigo-400 hover:text-indigo-300 transition-colors"> */}
           <p className="text-xl font-mono font-bold text-indigo-400">{ticketId}</p>
+          {/* </Link> */}
         </div>
         <p className="text-sm text-slate-500 leading-relaxed">
-          Our AI assistant will respond to your email within 5 minutes.<br />
+          Our AI assistant will respond you shortly.<br />
           For urgent issues, responses are prioritized automatically.
+          Please check your response in the <strong>Support Tickets</strong> section or try searching the provided ticket ID.
         </p>
         <button
           onClick={() => {
@@ -141,9 +145,11 @@ export default function SupportForm() {
             <Smartphone className="h-6 w-6 text-emerald-500" />
           </div>
           <div>
+            <Link href={"/whatsapp"}>
             <h3 className="font-bold text-white">WhatsApp Support</h3>
             <p className="text-sm text-slate-400">Message +1 415 523 8886</p>
             <p className="text-[10px] text-emerald-500 mt-1 font-mono">Code: join swung-morning</p>
+            </Link>
           </div>
         </div>
 
@@ -152,9 +158,11 @@ export default function SupportForm() {
             <Mail className="h-6 w-6 text-rose-500" />
           </div>
           <div>
+            <Link href={"/gmail"}>
             <h3 className="font-bold text-white">Email Support</h3>
-            <p className="text-sm text-slate-400">support@novasaas.com</p>
+            <p className="text-sm text-slate-400">opboyandguy@gmail.com</p>
             <p className="text-[10px] text-rose-500 mt-1">24/7 AI-Powered replies</p>
+            </Link>
           </div>
         </div>
       </div>

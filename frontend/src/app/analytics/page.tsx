@@ -17,7 +17,7 @@ export default function AnalyticsPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch("http://localhost:8000/api/metrics/overview")
+    fetch("https://muhammadjibran-hackathon5.hf.space/api/metrics/overview")
       .then(res => res.json())
       .then(data => {
         setMetrics(data)

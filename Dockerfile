@@ -18,6 +18,10 @@ COPY . .
 # Set Python path
 ENV PYTHONPATH=/app
 
-EXPOSE 8000
+# Make the start script executable
+RUN chmod +x start.sh
 
-CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+EXPOSE 7860
+
+# Use the start script to run multiple processes
+CMD ["./start.sh"]

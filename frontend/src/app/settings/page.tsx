@@ -16,7 +16,7 @@ export default function SettingsPage() {
   const fetchStatus = async () => {
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:8000/health');
+      const res = await fetch('https://muhammadjibran-hackathon5.hf.space/health');
       const data = await res.json();
       setStatus(data);
     } catch (err) {
