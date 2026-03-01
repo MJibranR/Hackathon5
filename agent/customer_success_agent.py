@@ -4,7 +4,7 @@ import os
 import json
 import re
 from uuid import UUID
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import asyncpg
 from openai import AsyncOpenAI

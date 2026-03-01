@@ -2,7 +2,7 @@ import os
 import asyncio
 import logging
 import time
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 from uuid import UUID
 
 import asyncpg
